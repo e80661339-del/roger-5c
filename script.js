@@ -1,386 +1,450 @@
-<script>
-  // ====================== DATOS INICIALES ======================
-  let puntos = parseInt(localStorage.getItem('ecoPuntos')) || 1240;
-  let botellas = parseInt(localStorage.getItem('ecoBotellas')) || 124;
 
-  // Tabla de niveles
-  const niveles = [
-    { nivel: 1, nombre: "Aprendiz Verde", min: 0, max: 199 },
-    { nivel: 2, nombre: "Reciclador", min: 200, max: 499 },
-    { nivel: 3, nombre: "Guardián del Planeta", min: 500, max: 999 },
-    { nivel: 4, nombre: "Embajador Eco", min: 1000, max: 2499 },
-    { nivel: 5, nombre: "Héroe del Reciclaje", min: 2500, max: Infinity }
-  ];
+// ====================== DATOS INICIALES ======================
 
-  // ====================== FUNCIONES PRINCIPALES ======================
+function obtenerNumeroGuardado(clave, valorInicial) {
+  try {
+    const valor = localStorage.getItem(clave);
+    const numero = Number(valor);
 
-  function guardarDatos() {
-    localStorage.setItem('ecoPuntos', puntos);
-    localStorage.setItem('ecoBotellas', botellas);
+    return valor !== null && Number.isFinite(numero) && numero >= 0
+      ? Math.floor(numero)
+      : valorInicial;
+  } catch (error) {
+    console.warn("No se pudieron recuperar los datos:", error);
+    return valorInicial;
+  }
+}
+
+let puntos = obtenerNumeroGuardado("ecoPuntos", 1240);
+let botellas = obtenerNumeroGuardado("ecoBotellas", 124);
+
+// Tabla de niveles
+const niveles = [
+  { nivel: 1, nombre: "Aprendiz Verde", min: 0, max: 199 },
+  { nivel: 2, nombre: "Reciclador", min: 200, max: 499 },
+  { nivel: 3, nombre: "Guardián del Planeta", min: 500, max: 999 },
+  { nivel: 4, nombre: "Embajador Eco", min: 1000, max: 2499 },
+  { nivel: 5, nombre: "Héroe del Reciclaje", min: 2500, max: Infinity }
+];
+
+let temporizadorNotificacion = null;
+
+// ====================== GUARDAR DATOS ======================
+
+function guardarDatos() {
+  try {
+    localStorage.setItem("ecoPuntos", String(puntos));
+    localStorage.setItem("ecoBotellas", String(botellas));
+  } catch (error) {
+    console.error("No se pudieron guardar los datos:", error);
+    mostrarNotificacion("No se pudieron guardar los cambios.", "error");
+  }
+}
+
+// ====================== OBTENER NIVEL ======================
+
+function obtenerNivel() {
+  return niveles.find(n => puntos >= n.min && puntos <= n.max)
+    || niveles[niveles.length - 1];
+}
+
+// ====================== ACTUALIZAR DASHBOARD ======================
+
+function actualizarDashboard() {
+  const nivelActual = obtenerNivel();
+
+  const siguiente = niveles.find(
+    n => n.nivel === nivelActual.nivel + 1
+  );
+
+  // Actualizar puntos
+  document.querySelector(".puntos-card .numero").textContent =
+    puntos.toLocaleString("es-ES");
+
+  // Actualizar nivel
+  document.querySelector(".nivel-badge").textContent =
+    `Nivel ${nivelActual.nivel} · ${nivelActual.nombre}`;
+
+  // Actualizar progreso
+  let porcentaje = 100;
+  let restantes = 0;
+
+  if (siguiente) {
+    const progreso = puntos - nivelActual.min;
+    const totalNivel = siguiente.min - nivelActual.min;
+
+    porcentaje = Math.min(
+      100,
+      Math.max(0, Math.round((progreso / totalNivel) * 100))
+    );
+
+    restantes = Math.max(0, siguiente.min - puntos);
   }
 
-  function obtenerNivel() {
-    return niveles.find(n => puntos >= n.min && puntos <= n.max);
-  }
+  document.querySelector(".progreso-fill").style.width =
+    porcentaje + "%";
 
-  function actualizarDashboard() {
-    const nivelActual = obtenerNivel();
-    const siguiente = niveles.find(n => n.nivel === nivelActual.nivel + 1);
+  document.querySelector(
+    ".progreso div span:last-child"
+  ).textContent = siguiente
+    ? `${restantes.toLocaleString("es-ES")} pts restantes`
+    : "¡Nivel máximo!";
 
-    // Actualizar puntos
-    document.querySelector('.puntos-card .numero').textContent = puntos.toLocaleString('es-ES');
+  // Actualizar estadísticas
+  const estadisticas = document.querySelectorAll(
+    ".stat-item .valor"
+  );
 
-    // Actualizar badge de nivel
-    document.querySelector('.nivel-badge').textContent = `Nivel ${nivelActual.nivel} · ${nivelActual.nombre}`;
+  estadisticas[0].textContent = botellas;
+  estadisticas[1].textContent =
+    (botellas * 0.03).toFixed(1) + " kg";
+  estadisticas[2].textContent =
+    (botellas * 0.066).toFixed(1) + " kg";
+  estadisticas[3].textContent =
+    Math.floor(botellas / 60);
 
-    // Barra de progreso
-    let porcentaje = 100;
-    let restantes = 0;
-
-    if (siguiente) {
-      const progreso = puntos - nivelActual.min;
-      const totalNivel = siguiente.min - nivelActual.min;
-      porcentaje = Math.min(100, Math.round((progreso / totalNivel) * 100));
-      restantes = siguiente.min - puntos;
-    }
-
-    document.querySelector('.progreso-fill').style.width = porcentaje + '%';
-    document.querySelector('.progreso div span:last-child').textContent = 
-      siguientes ? `${restantes} pts restantes` : "¡Nivel máximo!";
-
-    // Actualizar estadísticas
-    document.querySelectorAll('.stat-item .valor')[0].textContent = botellas;
-    document.querySelectorAll('.stat-item .valor')[1].textContent = (botellas * 0.03).toFixed(1) + " kg";
-    document.querySelectorAll('.stat-item .valor')[2].textContent = (botellas * 0.066).toFixed(1) + " kg";
-    document.querySelectorAll('.stat-item .valor')[3].textContent = Math.floor(botellas / 60);
-
-    // Resaltar nivel actual
-    document.querySelectorAll('.nivel-card').forEach(card => {
-      card.classList.remove('activo');
-      if (card.querySelector('.num').textContent == nivelActual.nivel) {
-        card.classList.add('activo');
-      }
-    });
-
-    guardarDatos();
-  }
-
-  // ====================== NOTIFICACIÓN ======================
-  function mostrarNotificacion(mensaje, tipo = "exito") {
-    // Eliminar notificación anterior si existe
-    const anterior = document.querySelector('.notificacion');
-    if (anterior) anterior.remove();
-
-    const noti = document.createElement('div');
-    noti.className = 'notificacion';
-    noti.innerHTML = `
-      <i class="fas ${tipo === 'exito' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-      <span>${mensaje}</span>
-    `;
-
-    document.body.appendChild(noti);
-
-    // Animación de entrada
-    setTimeout(() => noti.classList.add('mostrar'), 10);
-
-    // Desaparecer después de 3.5 segundos
-    setTimeout(() => {
-      noti.classList.remove('mostrar');
-      setTimeout(() => noti.remove(), 400);
-    }, 3500);
-  }
-
-  // ====================== MODAL REGISTRAR RECICLAJE ======================
-  function crearModalReciclaje() {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.id = 'modalReciclaje';
-    modal.innerHTML = `
-      <div class="modal">
-        <div class="modal-header">
-          <h3><i class="fas fa-recycle"></i> Registrar reciclaje</h3>
-          <button class="cerrar-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <label>Tipo de material</label>
-          <select id="tipoMaterial">
-            <option value="plastico">Botella de plástico (PET) — 10 pts</option>
-            <option value="vidrio">Botella de vidrio — 15 pts</option>
-            <option value="aluminio">Lata de aluminio — 12 pts</option>
-          </select>
-
-          <label style="margin-top:1rem;">Cantidad</label>
-          <input type="number" id="cantidad" min="1" value="1" max="100">
-
-          <label style="margin-top:1rem;">
-            <input type="checkbox" id="puntoOficial"> 
-            Lo entregué en un punto oficial (+5 pts extra por unidad)
-          </label>
-        </div>
-        <div class="modal-footer">
-          <button class="btn-cancelar">Cancelar</button>
-          <button class="btn-confirmar">Registrar y ganar puntos</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    // Eventos del modal
-    modal.querySelector('.cerrar-modal').onclick = cerrarModal;
-    modal.querySelector('.btn-cancelar').onclick = cerrarModal;
-    modal.querySelector('.btn-confirmar').onclick = confirmarReciclaje;
-    modal.onclick = (e) => { if (e.target === modal) cerrarModal(); };
-  }
-
-  function abrirModalReciclaje() {
-    document.getElementById('modalReciclaje').classList.add('activo');
-  }
-
-  function cerrarModal() {
-    document.getElementById('modalReciclaje').classList.remove('activo');
-  }
-
-  function confirmarReciclaje() {
-    const tipo = document.getElementById('tipoMaterial').value;
-    const cantidad = parseInt(document.getElementById('cantidad').value) || 1;
-    const oficial = document.getElementById('puntoOficial').checked;
-
-    let puntosPorUnidad = 10;
-    if (tipo === 'vidrio') puntosPorUnidad = 15;
-    if (tipo === 'aluminio') puntosPorUnidad = 12;
-
-    let total = cantidad * puntosPorUnidad;
-    if (oficial) total += cantidad * 5;
-
-    puntos += total;
-    botellas += cantidad;
-
-    actualizarDashboard();
-    cerrarModal();
-    mostrarNotificacion(`¡Genial! Has ganado <strong>${total} puntos</strong> 🎉`);
-  }
-
-  // ====================== CANJEAR RECOMPENSAS ======================
-  function canjearRecompensa(nombre, costo, boton) {
-    if (puntos < costo) {
-      mostrarNotificacion(`Necesitas ${costo - puntos} puntos más para esta recompensa`, "error");
-      return;
-    }
-
-    if (confirm(`¿Quieres canjear "${nombre}" por ${costo} puntos?`)) {
-      puntos -= costo;
-      actualizarDashboard();
-      mostrarNotificacion(`¡Recompensa canjeada! Disfruta tu ${nombre} 🎁`);
-      
-      // Efecto visual en el botón
-      boton.textContent = "¡Canjeado!";
-      boton.disabled = true;
-      boton.style.background = "#888";
-    }
-  }
-
-  // ====================== MENÚ MÓVIL ======================
-  function toggleMenu() {
-    const nav = document.querySelector('nav');
-    nav.classList.toggle('abierto');
-  }
-
-  // ====================== INICIALIZACIÓN ======================
-  document.addEventListener('DOMContentLoaded', () => {
-    // Crear modal
-    crearModalReciclaje();
-
-    // Actualizar dashboard al cargar
-    actualizarDashboard();
-
-    // Botón principal "Registrar reciclaje"
-    document.querySelector('.btn-principal').addEventListener('click', abrirModalReciclaje);
-
-    // Botones de canjear
-    document.querySelectorAll('.btn-canjear').forEach(btn => {
-      const card = btn.closest('.recompensa-card');
-      const nombre = card.querySelector('h3').textContent;
-      const costoTexto = card.querySelector('.costo').textContent;
-      const costo = parseInt(costoTexto.replace(/\D/g, ''));
-
-      btn.addEventListener('click', () => canjearRecompensa(nombre, costo, btn));
-    });
-
-    // Menú hamburguesa
-    document.querySelector('.btn-menu').addEventListener('click', toggleMenu);
-
-    // Smooth scroll
-    document.querySelectorAll('nav a').forEach(enlace => {
-      enlace.addEventListener('click', (e) => {
-        e.preventDefault();
-        const destino = document.querySelector(enlace.getAttribute('href'));
-        if (destino) {
-          destino.scrollIntoView({ behavior: 'smooth' });
-          document.querySelector('nav').classList.remove('abierto');
-        }
-      });
-    });
+  // Actualizar niveles visualmente
+  document.querySelectorAll(".nivel-card").forEach(card => {
+    card.classList.toggle(
+      "activo",
+      Number(card.querySelector(".num").textContent) ===
+        nivelActual.nivel
+    );
   });
-</script>
 
-<style>
-  /* ===== ESTILOS PARA LA INTERACTIVIDAD ===== */
+  guardarDatos();
+}
 
-  /* Notificación */
-  .notificacion {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #2d5a3d;
-    color: white;
-    padding: 1rem 1.4rem;
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    z-index: 9999;
-    transform: translateX(120%);
-    transition: transform 0.4s ease;
-    max-width: 340px;
+// ====================== NOTIFICACIONES ======================
+
+function mostrarNotificacion(mensaje, tipo = "exito") {
+  const anterior = document.querySelector(".notificacion");
+
+  if (anterior) {
+    anterior.remove();
   }
 
-  .notificacion.mostrar {
-    transform: translateX(0);
+  clearTimeout(temporizadorNotificacion);
+
+  const notificacion = document.createElement("div");
+  notificacion.className = "notificacion";
+
+  const icono = document.createElement("i");
+  icono.className = tipo === "exito"
+    ? "fas fa-check-circle"
+    : "fas fa-exclamation-circle";
+
+  const texto = document.createElement("span");
+  texto.textContent = mensaje;
+
+  notificacion.append(icono, texto);
+  document.body.appendChild(notificacion);
+
+  requestAnimationFrame(() => {
+    notificacion.classList.add("mostrar");
+  });
+
+  temporizadorNotificacion = setTimeout(() => {
+    notificacion.classList.remove("mostrar");
+
+    setTimeout(() => {
+      notificacion.remove();
+    }, 400);
+  }, 3500);
+}
+
+// ====================== MODAL DE RECICLAJE ======================
+
+function crearModalReciclaje() {
+  if (document.getElementById("modalReciclaje")) return;
+
+  const modal = document.createElement("div");
+
+  modal.className = "modal-overlay";
+  modal.id = "modalReciclaje";
+
+  modal.innerHTML = `
+    <div class="modal" role="dialog"
+         aria-modal="true"
+         aria-labelledby="tituloModal">
+
+      <div class="modal-header">
+        <h3 id="tituloModal">
+          <i class="fas fa-recycle"></i>
+          Registrar reciclaje
+        </h3>
+        <button class="cerrar-modal"
+                type="button"
+                aria-label="Cerrar">&times;</button>
+      </div>
+
+      <div class="modal-body">
+
+        <label for="tipoMaterial">Tipo de material</label>
+
+        <select id="tipoMaterial">
+          <option value="plastico">
+            Botella de plástico (PET) — 10 pts
+          </option>
+          <option value="vidrio">
+            Botella de vidrio — 15 pts
+          </option>
+          <option value="aluminio">
+            Lata de aluminio — 12 pts
+          </option>
+        </select>
+
+        <label for="cantidad" style="margin-top:1rem;">
+          Cantidad
+        </label>
+
+        <input type="number"
+               id="cantidad"
+               min="1"
+               max="100"
+               step="1"
+               value="1"
+               required>
+
+        <label style="margin-top:1rem;">
+          <input type="checkbox" id="puntoOficial">
+          Lo entregué en un punto oficial
+          (+5 pts extra por unidad)
+        </label>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancelar" type="button">
+          Cancelar
+        </button>
+
+        <button class="btn-confirmar" type="button">
+          Registrar y ganar puntos
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  modal.querySelector(".cerrar-modal")
+    .addEventListener("click", cerrarModal);
+
+  modal.querySelector(".btn-cancelar")
+    .addEventListener("click", cerrarModal);
+
+  modal.querySelector(".btn-confirmar")
+    .addEventListener("click", confirmarReciclaje);
+
+  modal.addEventListener("click", event => {
+    if (event.target === modal) cerrarModal();
+  });
+}
+
+function abrirModalReciclaje() {
+  const modal = document.getElementById("modalReciclaje");
+
+  if (modal) {
+    modal.classList.add("activo");
+    document.getElementById("cantidad").focus();
+  }
+}
+
+function cerrarModal() {
+  const modal = document.getElementById("modalReciclaje");
+
+  if (modal) {
+    modal.classList.remove("activo");
+  }
+}
+
+// ====================== REGISTRAR RECICLAJE ======================
+
+function confirmarReciclaje() {
+  const tipo = document.getElementById("tipoMaterial").value;
+
+  const campoCantidad = document.getElementById("cantidad");
+
+  const cantidad = Number(campoCantidad.value);
+
+  const oficial = document.getElementById("puntoOficial").checked;
+
+  // Validar cantidad
+  if (
+    !Number.isInteger(cantidad) ||
+    cantidad < 1 ||
+    cantidad > 100
+  ) {
+    mostrarNotificacion(
+      "Introduce una cantidad válida entre 1 y 100.",
+      "error"
+    );
+
+    campoCantidad.focus();
+    return;
   }
 
-  .notificacion i {
-    font-size: 1.3rem;
+  // Puntos por material
+  const puntosMaterial = {
+    plastico: 10,
+    vidrio: 15,
+    aluminio: 12
+  };
+
+  const puntosPorUnidad = puntosMaterial[tipo];
+
+  if (!puntosPorUnidad) {
+    mostrarNotificacion("Selecciona un material válido.", "error");
+    return;
   }
 
-  /* Modal */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
+  let total = cantidad * puntosPorUnidad;
+
+  // Bono por punto oficial
+  if (oficial) {
+    total += cantidad * 5;
   }
 
-  .modal-overlay.activo {
-    opacity: 1;
-    visibility: visible;
+  // Actualizar datos
+  puntos += total;
+  botellas += cantidad;
+
+  actualizarDashboard();
+  cerrarModal();
+
+  mostrarNotificacion(
+    `¡Genial! Has ganado ${total} puntos. ¡Gracias por reciclar!`
+  );
+
+  // Restablecer formulario
+  campoCantidad.value = 1;
+  document.getElementById("puntoOficial").checked = false;
+  document.getElementById("tipoMaterial").value = "plastico";
+}
+
+// ====================== CANJEAR RECOMPENSAS ======================
+
+function canjearRecompensa(nombre, costo, boton) {
+  if (puntos < costo) {
+    mostrarNotificacion(
+      `Necesitas ${costo - puntos} puntos más para esta recompensa.`,
+      "error"
+    );
+    return;
   }
 
-  .modal {
-    background: white;
-    border-radius: 18px;
-    width: 90%;
-    max-width: 420px;
-    overflow: hidden;
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
+  if (!confirm(
+    `¿Quieres canjear "${nombre}" por ${costo} puntos?`
+  )) {
+    return;
   }
 
-  .modal-overlay.activo .modal {
-    transform: scale(1);
-  }
+  puntos -= costo;
 
-  .modal-header {
-    background: #4a7c59;
-    color: white;
-    padding: 1.2rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+  actualizarDashboard();
 
-  .modal-header h3 {
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+  mostrarNotificacion(
+    `¡Recompensa canjeada! Disfruta tu ${nombre}.`
+  );
 
-  .cerrar-modal {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.6rem;
-    cursor: pointer;
-    line-height: 1;
-  }
+  boton.textContent = "¡Canjeado!";
+  boton.disabled = true;
+  boton.style.background = "#888";
+}
 
-  .modal-body {
-    padding: 1.5rem;
-  }
+// ====================== MENÚ MÓVIL ======================
 
-  .modal-body label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.4rem;
-    color: #333;
-  }
+function toggleMenu() {
+  const nav = document.querySelector("nav");
+  const boton = document.querySelector(".btn-menu");
 
-  .modal-body select,
-  .modal-body input[type="number"] {
-    width: 100%;
-    padding: 0.7rem;
-    border: 2px solid #ddd;
-    border-radius: 10px;
-    font-size: 1rem;
-  }
+  const abierto = nav.classList.toggle("abierto");
 
-  .modal-body input[type="checkbox"] {
-    margin-right: 0.5rem;
-  }
+  boton.setAttribute("aria-expanded", String(abierto));
+}
 
-  .modal-footer {
-    padding: 1rem 1.5rem 1.5rem;
-    display: flex;
-    gap: 0.8rem;
-    justify-content: flex-end;
-  }
+// ====================== INICIALIZACIÓN ======================
 
-  .btn-cancelar {
-    background: #eee;
-    border: none;
-    padding: 0.7rem 1.3rem;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-  }
+document.addEventListener("DOMContentLoaded", () => {
 
-  .btn-confirmar {
-    background: #4a7c59;
-    color: white;
-    border: none;
-    padding: 0.7rem 1.3rem;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-  }
+  // Crear modal
+  crearModalReciclaje();
 
-  .btn-confirmar:hover {
-    background: #2d5a3d;
-  }
+  // Actualizar información inicial
+  actualizarDashboard();
 
-  /* Menú móvil */
-  @media (max-width: 768px) {
-    nav {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: #5a7d66;
-      flex-direction: column;
-      padding: 1rem;
-      gap: 0.8rem;
-      display: none;
+  // Botón de registrar reciclaje
+  document.querySelector(".btn-principal")
+    .addEventListener("click", abrirModalReciclaje);
+
+  // Botones de recompensas
+  document.querySelectorAll(".btn-canjear").forEach(boton => {
+
+    const tarjeta = boton.closest(".recompensa-card");
+
+    const nombre = tarjeta.querySelector("h3").textContent.trim();
+
+    const costoTexto = tarjeta.querySelector(".costo").textContent;
+
+    const costo = Number(costoTexto.replace(/[^\d]/g, ""));
+
+    boton.addEventListener("click", () => {
+      canjearRecompensa(nombre, costo, boton);
+    });
+
+  });
+
+  // Menú hamburguesa
+  const botonMenu = document.querySelector(".btn-menu");
+
+  botonMenu.setAttribute("aria-expanded", "false");
+
+  botonMenu.setAttribute("aria-label", "Abrir menú");
+
+  botonMenu.addEventListener("click", toggleMenu);
+
+  // Navegación suave
+  document.querySelectorAll("nav a").forEach(enlace => {
+
+    enlace.addEventListener("click", event => {
+
+      const href = enlace.getAttribute("href");
+
+      if (!href || !href.startsWith("#") || href === "#") {
+        return;
+      }
+
+      const destino = document.getElementById(href.substring(1));
+
+      if (destino) {
+        event.preventDefault();
+
+        destino.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+
+        document.querySelector("nav").classList.remove("abierto");
+
+        botonMenu.setAttribute("aria-expanded", "false");
+      }
+
+    });
+
+  });
+
+  // Cerrar modal y menú con Escape
+  document.addEventListener("keydown", event => {
+
+    if (event.key === "Escape") {
+      cerrarModal();
+
+      document.querySelector("nav").classList.remove("abierto");
+
+      botonMenu.setAttribute("aria-expanded", "false");
     }
 
-    nav.abierto {
-      display: flex;
-    }
-  }
-</style>
+  });
+
+});

@@ -3,18 +3,746 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi página sencilla</title>
-  <link rel="stylesheet" href="style.css">
+  <title>EcoRuta - Recicla y Gana</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --verde-oscuro: #2d5a3d;
+      --verde-medio: #4a7c59;
+      --verde-claro: #6b9b7a;
+      --verde-suave: #e8f0e9;
+      --verde-header: #5a7d66;
+      --blanco: #ffffff;
+      --gris-texto: #333;
+      --gris-claro: #f5f7f5;
+      --amarillo: #f4c430;
+      --sombra: 0 4px 20px rgba(0,0,0,0.08);
+      --radio: 16px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--gris-claro);
+      color: var(--gris-texto);
+      line-height: 1.6;
+    }
+
+    /* ========== HEADER ========== */
+    header {
+      background: var(--verde-header);
+      color: white;
+      padding: 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.6rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo i {
+      font-size: 1.4rem;
+    }
+
+    nav {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: opacity 0.2s;
+    }
+
+    nav a:hover {
+      opacity: 0.85;
+    }
+
+    .btn-menu {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      background: linear-gradient(135deg, var(--verde-oscuro), var(--verde-medio));
+      color: white;
+      padding: 4rem 1.5rem;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 2.4rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      opacity: 0.95;
+    }
+
+    .btn-principal {
+      background: var(--amarillo);
+      color: #222;
+      border: none;
+      padding: 0.9rem 2rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-principal:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    /* ========== CONTENEDOR GENERAL ========== */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    section {
+      margin-bottom: 3.5rem;
+    }
+
+    .section-title {
+      font-size: 1.7rem;
+      color: var(--verde-oscuro);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    /* ========== DASHBOARD PUNTOS ========== */
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 700px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: white;
+      border-radius: var(--radio);
+      padding: 1.8rem;
+      box-shadow: var(--sombra);
+    }
+
+    .puntos-card {
+      background: linear-gradient(135deg, var(--verde-medio), var(--verde-oscuro));
+      color: white;
+      text-align: center;
+    }
+
+    .puntos-card .numero {
+      font-size: 3.2rem;
+      font-weight: 700;
+      line-height: 1;
+      margin: 0.5rem 0;
+    }
+
+    .puntos-card .label {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .nivel-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    .progreso {
+      margin-top: 1.5rem;
+    }
+
+    .progreso-bar {
+      height: 10px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .progreso-fill {
+      height: 100%;
+      background: var(--amarillo);
+      width: 65%;
+      border-radius: 10px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 1rem;
+      background: var(--verde-suave);
+      border-radius: 12px;
+    }
+
+    .stat-item .valor {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--verde-oscuro);
+    }
+
+    .stat-item .desc {
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    /* ========== CÓMO GANAR PUNTOS ========== */
+    .acciones-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .accion-card {
+      background: white;
+      border-radius: var(--radio);
+      padding: 1.5rem;
+      box-shadow: var(--sombra);
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      transition: transform 0.2s;
+    }
+
+    .accion-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .accion-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--verde-suave);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: var(--verde-medio);
+      flex-shrink: 0;
+    }
+
+    .accion-info h3 {
+      font-size: 1.05rem;
+      margin-bottom: 0.3rem;
+      color: var(--verde-oscuro);
+    }
+
+    .accion-info p {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .puntos-badge {
+      background: var(--verde-medio);
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      margin-top: 0.4rem;
+      display: inline-block;
+    }
+
+    /* ========== RECOMPENSAS ========== */
+    .recompensas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.3rem;
+    }
+
+    .recompensa-card {
+      background: white;
+      border-radius: var(--radio);
+      overflow: hidden;
+      box-shadow: var(--sombra);
+      transition: transform 0.2s;
+    }
+
+    .recompensa-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .recompensa-img {
+      height: 140px;
+      background: var(--verde-suave);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+
+    .recompensa-body {
+      padding: 1.2rem;
+    }
+
+    .recompensa-body h3 {
+      font-size: 1.05rem;
+      margin-bottom: 0.4rem;
+      color: var(--verde-oscuro);
+    }
+
+    .recompensa-body p {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .recompensa-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .costo {
+      font-weight: 700;
+      color: var(--verde-medio);
+      font-size: 1.1rem;
+    }
+
+    .btn-canjear {
+      background: var(--verde-medio);
+      color: white;
+      border: none;
+      padding: 0.45rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-canjear:hover {
+      background: var(--verde-oscuro);
+    }
+
+    /* ========== MENÚ ORIGINAL (ESTILO LISTA) ========== */
+    .menu-lista {
+      background: white;
+      border-radius: var(--radio);
+      overflow: hidden;
+      box-shadow: var(--sombra);
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 1.1rem 1.4rem;
+      border-bottom: 1px solid #eee;
+      text-decoration: none;
+      color: var(--gris-texto);
+      transition: background 0.2s;
+    }
+
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .menu-item:hover {
+      background: var(--verde-suave);
+    }
+
+    .menu-item i {
+      width: 36px;
+      font-size: 1.2rem;
+      color: var(--verde-medio);
+    }
+
+    .menu-item span {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .menu-item .flecha {
+      color: #aaa;
+    }
+
+    /* ========== NIVELES ========== */
+    .niveles {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+
+    .nivel-card {
+      min-width: 160px;
+      background: white;
+      border-radius: 14px;
+      padding: 1.2rem;
+      text-align: center;
+      box-shadow: var(--sombra);
+      border: 2px solid transparent;
+    }
+
+    .nivel-card.activo {
+      border-color: var(--verde-medio);
+      background: var(--verde-suave);
+    }
+
+    .nivel-card .num {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--verde-oscuro);
+    }
+
+    .nivel-card .nombre {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin: 0.3rem 0;
+    }
+
+    .nivel-card .rango {
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    /* ========== FOOTER ========== */
+    footer {
+      background: var(--verde-oscuro);
+      color: white;
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      margin-top: 2rem;
+    }
+
+    footer p {
+      opacity: 0.85;
+      font-size: 0.95rem;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 768px) {
+      nav {
+        display: none;
+      }
+      .btn-menu {
+        display: block;
+      }
+      .hero h1 {
+        font-size: 1.9rem;
+      }
+      .section-title {
+        font-size: 1.45rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <main>
-    <h1>¡Hola! Esta es mi página</h1>
-    <p>Hecha con HTML, CSS y JavaScript</p>
 
-    <button id="boton">Haz clic aquí</button>
-    <p id="contador">Clics: 0</p>
-  </main>
+  <!-- HEADER -->
+  <header>
+    <div class="header-content">
+      <div class="logo">
+        <i class="fas fa-leaf"></i>
+        EcoRuta
+      </div>
+      <nav>
+        <a href="#inicio">Inicio</a>
+        <a href="#puntos">Mis Puntos</a>
+        <a href="#recompensas">Recompensas</a>
+        <a href="#aprender">Aprender</a>
+        <a href="#mapa">Mapa</a>
+      </nav>
+      <button class="btn-menu"><i class="fas fa-bars"></i></button>
+    </div>
+  </header>
 
-  <script src="script.js"></script>
+  <!-- HERO -->
+  <section class="hero" id="inicio">
+    <h1>Recicla botellas.<br>Gana puntos. Cambia el planeta.</h1>
+    <p>Únete a EcoRuta, registra tus botellas recicladas y canjea puntos por recompensas reales mientras ayudas al medio ambiente.</p>
+    <button class="btn-principal">
+      <i class="fas fa-recycle"></i> Registrar reciclaje
+    </button>
+  </section>
+
+  <div class="container">
+
+    <!-- DASHBOARD -->
+    <section id="puntos">
+      <h2 class="section-title"><i class="fas fa-trophy"></i> Tu progreso</h2>
+      
+      <div class="dashboard">
+        <!-- Tarjeta de puntos -->
+        <div class="card puntos-card">
+          <div class="label">Tus EcoPuntos</div>
+          <div class="numero">1.240</div>
+          <div class="nivel-badge">Nivel 3 · Guardián del Planeta</div>
+          
+          <div class="progreso">
+            <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
+              <span>Progreso al siguiente nivel</span>
+              <span>760 pts restantes</span>
+            </div>
+            <div class="progreso-bar">
+              <div class="progreso-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="card">
+          <h3 style="margin-bottom:1.2rem;color:var(--verde-oscuro);">Tu impacto</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="valor">124</div>
+              <div class="desc">Botellas recicladas</div>
+            </div>
+            <div class="stat-item">
+              <div class="valor">3.7 kg</div>
+              <div class="desc">Plástico evitado</div>
+            </div>
+            <div class="stat-item">
+              <div class="valor">8.2 kg</div>
+              <div class="desc">CO₂ ahorrado</div>
+            </div>
+            <div class="stat-item">
+              <div class="valor">2</div>
+              <div class="desc">Árboles equivalentes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CÓMO GANAR PUNTOS -->
+    <section>
+      <h2 class="section-title"><i class="fas fa-star"></i> Cómo ganar puntos</h2>
+      <div class="acciones-grid">
+        <div class="accion-card">
+          <div class="accion-icon"><i class="fas fa-wine-bottle"></i></div>
+          <div class="accion-info">
+            <h3>Botella de plástico</h3>
+            <p>Recicla una botella PET</p>
+            <span class="puntos-badge">+10 puntos</span>
+          </div>
+        </div>
+        <div class="accion-card">
+          <div class="accion-icon"><i class="fas fa-wine-glass"></i></div>
+          <div class="accion-info">
+            <h3>Botella de vidrio</h3>
+            <p>Más valorada por su peso</p>
+            <span class="puntos-badge">+15 puntos</span>
+          </div>
+        </div>
+        <div class="accion-card">
+          <div class="accion-icon"><i class="fas fa-map-marker-alt"></i></div>
+          <div class="accion-info">
+            <h3>Punto oficial</h3>
+            <p>Bonus por usar puntos EcoRuta</p>
+            <span class="puntos-badge">+5 extra</span>
+          </div>
+        </div>
+        <div class="accion-card">
+          <div class="accion-icon"><i class="fas fa-users"></i></div>
+          <div class="accion-info">
+            <h3>Invitar amigos</h3>
+            <p>Cuando reciclen por primera vez</p>
+            <span class="puntos-badge">+100 puntos</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NIVELES -->
+    <section>
+      <h2 class="section-title"><i class="fas fa-medal"></i> Niveles</h2>
+      <div class="niveles">
+        <div class="nivel-card">
+          <div class="num">1</div>
+          <div class="nombre">Aprendiz Verde</div>
+          <div class="rango">0 – 199 pts</div>
+        </div>
+        <div class="nivel-card">
+          <div class="num">2</div>
+          <div class="nombre">Reciclador</div>
+          <div class="rango">200 – 499 pts</div>
+        </div>
+        <div class="nivel-card activo">
+          <div class="num">3</div>
+          <div class="nombre">Guardián</div>
+          <div class="rango">500 – 999 pts</div>
+        </div>
+        <div class="nivel-card">
+          <div class="num">4</div>
+          <div class="nombre">Embajador</div>
+          <div class="rango">1.000 – 2.499</div>
+        </div>
+        <div class="nivel-card">
+          <div class="num">5</div>
+          <div class="nombre">Héroe</div>
+          <div class="rango">2.500+ pts</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECOMPENSAS -->
+    <section id="recompensas">
+      <h2 class="section-title"><i class="fas fa-gift"></i> Recompensas</h2>
+      <div class="recompensas-grid">
+        <div class="recompensa-card">
+          <div class="recompensa-img">🏅</div>
+          <div class="recompensa-body">
+            <h3>Insignia digital</h3>
+            <p>Muestra tu logro en el perfil</p>
+            <div class="recompensa-footer">
+              <span class="costo">50 pts</span>
+              <button class="btn-canjear">Canjear</button>
+            </div>
+          </div>
+        </div>
+        <div class="recompensa-card">
+          <div class="recompensa-img">🛍️</div>
+          <div class="recompensa-body">
+            <h3>Bolsa de tela</h3>
+            <p>Bolsa reutilizable EcoRuta</p>
+            <div class="recompensa-footer">
+              <span class="costo">300 pts</span>
+              <button class="btn-canjear">Canjear</button>
+            </div>
+          </div>
+        </div>
+        <div class="recompensa-card">
+          <div class="recompensa-img">🍶</div>
+          <div class="recompensa-body">
+            <h3>Botella reutilizable</h3>
+            <p>Acero inoxidable 750ml</p>
+            <div class="recompensa-footer">
+              <span class="costo">500 pts</span>
+              <button class="btn-canjear">Canjear</button>
+            </div>
+          </div>
+        </div>
+        <div class="recompensa-card">
+          <div class="recompensa-img">🌳</div>
+          <div class="recompensa-body">
+            <h3>Plantar un árbol</h3>
+            <p>A tu nombre + certificado</p>
+            <div class="recompensa-footer">
+              <span class="costo">800 pts</span>
+              <button class="btn-canjear">Canjear</button>
+            </div>
+          </div>
+        </div>
+        <div class="recompensa-card">
+          <div class="recompensa-img">👕</div>
+          <div class="recompensa-body">
+            <h3>Camiseta EcoRuta</h3>
+            <p>Algodón orgánico</p>
+            <div class="recompensa-footer">
+              <span class="costo">2.000 pts</span>
+              <button class="btn-canjear">Canjear</button>
+            </div>
+          </div>
+        </div>
+        <div class="recompensa-card">
+          <div class="recompensa-img">🎫</div>
+          <div class="recompensa-body">
+            <h3>Cupón 10%</h3>
+            <p>En tiendas aliadas</p>
+            <div class="recompensa-footer">
+              <span class="costo">150 pts</span>
+              <button class="btn-canjear">Canjear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MENÚ ORIGINAL / APRENDER -->
+    <section id="aprender">
+      <h2 class="section-title"><i class="fas fa-book-open"></i> Aprende y explora</h2>
+      <div class="menu-lista">
+        <a href="#" class="menu-item">
+          <i class="fas fa-video"></i>
+          <span>¿Qué es ecología?</span>
+          <i class="fas fa-chevron-right flecha"></i>
+        </a>
+        <a href="#" class="menu-item">
+          <i class="fas fa-map"></i>
+          <span>Mapa de puntos de reciclaje</span>
+          <i class="fas fa-chevron-right flecha"></i>
+        </a>
+        <a href="#" class="menu-item">
+          <i class="fas fa-recycle"></i>
+          <span>¿Qué es reciclar?</span>
+          <i class="fas fa-chevron-right flecha"></i>
+        </a>
+        <a href="#" class="menu-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>Puntos de reciclaje</span>
+          <i class="fas fa-chevron-right flecha"></i>
+        </a>
+        <a href="#" class="menu-item">
+          <i class="fas fa-palette"></i>
+          <span>6 colores de reciclaje</span>
+          <i class="fas fa-chevron-right flecha"></i>
+        </a>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p><strong>EcoRuta</strong> · Recicla botellas, gana puntos y ayuda al planeta</p>
+    <p style="margin-top:0.5rem;font-size:0.85rem;opacity:0.7;">Hecho con 💚 para un futuro más verde</p>
+  </footer>
+
 </body>
 </html>
